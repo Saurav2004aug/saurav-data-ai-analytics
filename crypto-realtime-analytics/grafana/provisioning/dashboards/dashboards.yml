@@ -1,0 +1,7 @@
+apiVersion: 1
+providers:
+  - name: crypto
+    folder: Crypto
+    type: file
+    options:
+      path: /var/lib/grafana/dashboards

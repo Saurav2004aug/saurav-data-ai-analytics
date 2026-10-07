@@ -1,0 +1,105 @@
+# Semantic layer: what the LLM is told about the warehouse.
+# Descriptions, synonyms and business rules matter more for accuracy than the model size:
+# they are how "revenue", "late" or "repeat customer" get ONE definition company-wide.
+
+business_rules:
+  - "Revenue = SUM(order_value) over orders where is_canceled = 0. Never include canceled orders in revenue."
+  - "Average order value (AOV) = revenue / number of non-canceled orders."
+  - "An order is late when is_late = 1 (delivered after the estimated date). Only delivered orders have is_late set."
+  - "A repeat customer has n_orders > 1 in dim_customers (is_repeat_customer = 1)."
+  - "Customers are identified by customer_unique_id (a person), never by order."
+  - "order_month is text 'YYYY-MM'; order_year is an integer. Prefer them over date functions."
+  - "Monetary values are in Brazilian reais (BRL)."
+
+tables:
+  fct_orders:
+    description: One row per order. The main fact table for orders, revenue, delivery and reviews.
+    synonyms: [orders, purchases, sales, transactions, deliveries, reviews, revenue]
+    columns:
+      order_id: Unique order identifier.
+      customer_unique_id: The customer (person) who placed the order. FK to dim_customers.
+      customer_state: Two-letter Brazilian state code of the customer, e.g. SP, RJ, MG.
+      order_status: "delivered, shipped, canceled, unavailable, invoiced, processing, created, approved."
+      order_date: Purchase date.
+      order_year: Purchase year (integer), e.g. 2017.
+      order_month: Purchase month as text 'YYYY-MM'.
+      n_items: Number of items (lines) in the order.
+      items_value: Merchandise value of the order (BRL).
+      freight_value: Shipping cost paid (BRL).
+      order_value: items_value + freight_value (BRL). Use for revenue.
+      payment_type: "Main payment method: credit_card, boleto, voucher, debit_card."
+      installments: Number of credit-card installments.
+      review_score: Customer review, 1 (worst) to 5 (best). Null if no review.
+      delivery_days: Days from purchase to delivery (null if not delivered).
+      delay_days: Days delivered after the estimated date; negative = early.
+      is_late: 1 if delivered late, 0 if on time, null if not delivered.
+      is_canceled: 1 if canceled or unavailable, else 0.
+      main_category: Product category of the first item.
+      order_seq: The customer's order number (1 = first order).
+
+  fct_order_items:
+    description: One row per order line (product sold). Use for product, category and seller level questions.
+    synonyms: [items, products sold, units, lines, sellers revenue, category sales]
+    columns:
+      order_id: FK to fct_orders.
+      item_seq: Line number within the order.
+      product_id: FK to dim_products.
+      seller_id: FK to dim_sellers.
+      category: Product category (English).
+      price: Item price (BRL).
+      freight_value: Freight for this item (BRL).
+      order_date: Purchase date.
+      is_canceled: 1 if the order was canceled.
+
+  dim_customers:
+    description: One row per customer (person) with lifetime metrics.
+    synonyms: [customers, buyers, clients, users, retention, repeat, lifetime value, ltv]
+    columns:
+      customer_unique_id: Customer identifier.
+      state_code: Customer state (first order).
+      region: "Brazilian region: North, Northeast, Center-West, Southeast, South."
+      first_order_date: Date of the first order.
+      n_orders: Total orders placed.
+      lifetime_value: Revenue from the customer's non-canceled orders (BRL).
+      is_repeat_customer: 1 if the customer ordered more than once.
+
+  dim_products:
+    description: One row per product.
+    synonyms: [products, catalog, sku, category]
+    columns:
+      product_id: Product identifier.
+      category: Product category (English).
+      weight_g: Weight in grams.
+      photos_qty: Number of listing photos.
+
+  dim_sellers:
+    description: One row per marketplace seller.
+    synonyms: [sellers, merchants, vendors, shops, suppliers]
+    columns:
+      seller_id: Seller identifier.
+      state_code: Seller state.
+      region: Seller region.
+      city: Seller city.
+
+  mart_monthly_kpis:
+    description: Pre-aggregated monthly KPIs. Fastest source for month-level trend questions.
+    synonyms: [monthly, trend, kpi, growth, month over month, over time]
+    columns:
+      order_month: Month as text 'YYYY-MM'.
+      orders: All orders placed that month (incl. canceled).
+      revenue: Revenue (non-canceled order_value) in BRL.
+      avg_order_value: Revenue / non-canceled orders.
+      new_customers: Customers whose first order was that month.
+      avg_review_score: Average review score.
+      late_delivery_rate: Share of delivered orders that were late (0-1).
+
+# Join paths (used for prompt hints and for retrieval closure: a retrieved dimension
+# always brings the fact table it joins to).
+relationships:
+  - fct_orders.customer_unique_id = dim_customers.customer_unique_id
+  - fct_order_items.order_id = fct_orders.order_id
+  - fct_order_items.product_id = dim_products.product_id
+  - fct_order_items.seller_id = dim_sellers.seller_id
+
+# Always included in the prompt: the central fact table answers most questions.
+pinned_tables: [fct_orders]

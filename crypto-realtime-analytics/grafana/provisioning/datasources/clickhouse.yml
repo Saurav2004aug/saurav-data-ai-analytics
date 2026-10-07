@@ -1,0 +1,15 @@
+apiVersion: 1
+datasources:
+  - name: ClickHouse
+    type: grafana-clickhouse-datasource
+    uid: clickhouse
+    isDefault: true
+    jsonData:
+      host: clickhouse          # plugin v4
+      server: clickhouse        # plugin v3 (kept for compatibility)
+      port: 9000
+      protocol: native
+      username: default
+      defaultDatabase: crypto
+    secureJsonData:
+      password: ""

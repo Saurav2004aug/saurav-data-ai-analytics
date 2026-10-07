@@ -1,0 +1,13 @@
+olist_analytics:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "{{ env_var('OLIST_DUCKDB_PATH', '../warehouse/olist.duckdb') }}"
+      threads: 4
+    # Same models on MotherDuck (serverless DuckDB): export MOTHERDUCK_TOKEN=... then
+    #   dbt build --target prod
+    prod:
+      type: duckdb
+      path: "md:olist_analytics"
+      threads: 8

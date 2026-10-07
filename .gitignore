@@ -1,0 +1,65 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+credentials/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# macOS / editors
+.DS_Store
+.vscode/
+.idea/
+
+# Build / packaging
+build/
+dist/
+*.egg-info/
+
+# Logs
+*.log
+
+# Databases / generated local data
+*.db
+*.sqlite
+*.sqlite3
+*.duckdb
+*.parquet
+
+# Project-generated data
+**/data/raw/*
+**/data/processed/*
+**/warehouse/*
+**/tmp/*
+**/cache/*
+
+# Keep directory placeholders
+!**/data/raw/.gitkeep
+!**/data/processed/.gitkeep
+!**/warehouse/.gitkeep
+
+# Node
+node_modules/
+
+# Coverage
+.coverage
+htmlcov/
+coverage.xml

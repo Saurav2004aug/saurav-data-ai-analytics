@@ -1,0 +1,73 @@
+topic,model,rating,rank,n_battles
+invented / history / causes,gpt-4,1162.4599644842651,1,3391
+invented / history / causes,claude-v1,1157.0641292249625,2,3391
+invented / history / causes,gpt-3.5-turbo,1083.6216138357602,3,3391
+invented / history / causes,claude-instant-v1,1074.036410920212,4,3391
+invented / history / causes,palm-2,1056.1791084472484,5,3391
+invented / history / causes,vicuna-13b,1045.5892711828221,6,3391
+invented / history / causes,koala-13b,976.1827848481839,7,3391
+invented / history / causes,oasst-pythia-12b,953.4723608905442,8,3391
+invented / history / causes,mpt-7b-chat,947.4442610719223,9,3391
+invented / history / causes,chatglm-6b,883.7332616574596,10,3391
+invented / history / causes,alpaca-13b,874.0181614058433,11,3391
+invented / history / causes,dolly-v2-12b,786.1986720307764,12,3391
+plan / business / create,gpt-4,1169.284241119053,1,2498
+plan / business / create,gpt-3.5-turbo,1116.8029859772041,2,2498
+plan / business / create,claude-instant-v1,1108.4625808071546,3,2498
+plan / business / create,claude-v1,1106.5115080263993,4,2498
+plan / business / create,vicuna-13b,1068.76212226899,5,2498
+plan / business / create,palm-2,1011.0553606418226,6,2498
+plan / business / create,koala-13b,984.3729690320253,7,2498
+plan / business / create,mpt-7b-chat,954.6062130737647,8,2498
+plan / business / create,oasst-pythia-12b,921.5843039665308,9,2498
+plan / business / create,chatglm-6b,890.2996731098074,10,2498
+plan / business / create,alpaca-13b,856.0802944933924,11,2498
+plan / business / create,dolly-v2-12b,812.1777474838557,12,2498
+resume / tips / idea,gpt-4,1147.545586976011,1,2922
+resume / tips / idea,vicuna-13b,1125.16251340887,2,2922
+resume / tips / idea,claude-v1,1111.4775658215497,3,2922
+resume / tips / idea,claude-instant-v1,1102.8205633936743,4,2922
+resume / tips / idea,gpt-3.5-turbo,1101.0771363418849,5,2922
+resume / tips / idea,palm-2,999.0809211183893,6,2922
+resume / tips / idea,koala-13b,979.2140082898704,7,2922
+resume / tips / idea,mpt-7b-chat,952.6403875523789,8,2922
+resume / tips / idea,oasst-pythia-12b,931.737941375237,9,2922
+resume / tips / idea,chatglm-6b,874.4234844641079,10,2922
+resume / tips / idea,alpaca-13b,873.1942486936175,11,2922
+resume / tips / idea,dolly-v2-12b,801.6256425644092,12,2922
+step / prove / probability,gpt-4,1218.5290352885036,1,3301
+step / prove / probability,claude-v1,1133.5493600364987,2,3301
+step / prove / probability,claude-instant-v1,1117.5359015105314,3,3301
+step / prove / probability,gpt-3.5-turbo,1080.5426589333058,4,3301
+step / prove / probability,vicuna-13b,1062.27196342492,5,3301
+step / prove / probability,palm-2,997.2666481744202,6,3301
+step / prove / probability,koala-13b,982.4011568367637,7,3301
+step / prove / probability,mpt-7b-chat,931.6309511895734,8,3301
+step / prove / probability,oasst-pythia-12b,920.9198175018777,9,3301
+step / prove / probability,chatglm-6b,878.0165961223046,10,3301
+step / prove / probability,alpaca-13b,867.783347756942,11,3301
+step / prove / probability,dolly-v2-12b,809.5525632243592,12,3301
+write / catchy / catchy slogan,claude-v1,1177.8880877908798,1,4579
+write / catchy / catchy slogan,gpt-4,1175.6707659574176,2,4579
+write / catchy / catchy slogan,claude-instant-v1,1116.2231568444463,3,4579
+write / catchy / catchy slogan,gpt-3.5-turbo,1095.3871258933705,4,4579
+write / catchy / catchy slogan,vicuna-13b,1048.0333173219972,5,4579
+write / catchy / catchy slogan,palm-2,1000.2419711748732,6,4579
+write / catchy / catchy slogan,koala-13b,957.5297687146301,7,4579
+write / catchy / catchy slogan,mpt-7b-chat,931.991212077978,8,4579
+write / catchy / catchy slogan,oasst-pythia-12b,924.0564613335672,9,4579
+write / catchy / catchy slogan,alpaca-13b,868.070445562269,10,4579
+write / catchy / catchy slogan,chatglm-6b,868.0200055663181,11,4579
+write / catchy / catchy slogan,dolly-v2-12b,836.8876817622528,12,4579
+write / write python / python function,gpt-4,1201.9905087530549,1,3309
+write / write python / python function,claude-v1,1124.322897188892,2,3309
+write / write python / python function,gpt-3.5-turbo,1104.4899842547902,3,3309
+write / write python / python function,vicuna-13b,1079.205396364601,4,3309
+write / write python / python function,claude-instant-v1,1077.213776764344,5,3309
+write / write python / python function,palm-2,998.0434093259836,6,3309
+write / write python / python function,koala-13b,985.9982988634385,7,3309
+write / write python / python function,mpt-7b-chat,953.4122262728731,8,3309
+write / write python / python function,oasst-pythia-12b,924.822906336414,9,3309
+write / write python / python function,alpaca-13b,875.6931918997252,10,3309
+write / write python / python function,chatglm-6b,851.4099139754464,11,3309
+write / write python / python function,dolly-v2-12b,823.3974900004366,12,3309

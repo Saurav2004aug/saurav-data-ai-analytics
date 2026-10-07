@@ -1,0 +1,27 @@
+version: 2
+
+sources:
+  - name: olist
+    description: Raw Olist marketplace extracts, loaded as-delivered (all varchar) by ingestion/ingest.py.
+    schema: raw
+    tables:
+      - name: orders
+        columns:
+          - name: order_id
+            data_tests: [unique, not_null]
+      - name: customers
+        columns:
+          - name: customer_id
+            data_tests: [unique, not_null]
+      - name: order_items
+      - name: order_payments
+      - name: order_reviews
+      - name: products
+        columns:
+          - name: product_id
+            data_tests: [unique, not_null]
+      - name: sellers
+        columns:
+          - name: seller_id
+            data_tests: [unique, not_null]
+      - name: category_translation

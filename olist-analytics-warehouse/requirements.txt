@@ -1,0 +1,15 @@
+# warehouse + transformations
+duckdb>=1.1
+dbt-core>=1.8
+dbt-duckdb>=1.8
+# orchestration
+dagster>=1.8
+dagster-webserver>=1.8
+dagster-dbt>=0.24
+# ingestion / analysis
+kaggle>=1.6
+pandas>=2.2
+numpy>=2.0
+matplotlib>=3.9
+pyyaml>=6.0
+jinja2>=3.1

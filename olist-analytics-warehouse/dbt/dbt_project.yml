@@ -1,0 +1,41 @@
+name: olist_analytics
+version: "1.0.0"
+config-version: 2
+profile: olist_analytics
+
+model-paths: ["models"]
+macro-paths: ["macros"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+analysis-paths: ["analyses"]
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+vars:
+  # orders are "late" when delivered more than this many days after the estimate
+  late_grace_days: 0
+  # a customer is "active" for RFM recency if they bought within this many days of the data end
+  rfm_window_days: 365
+
+models:
+  olist_analytics:
+    staging:
+      +materialized: view
+      +schema: staging
+    intermediate:
+      +materialized: ephemeral
+    marts:
+      +materialized: table
+      core:
+        +schema: core
+      analytics:
+        +schema: analytics
+
+seeds:
+  olist_analytics:
+    +schema: reference
+    brazil_state_regions:
+      +column_types:
+        state_code: varchar
+        state_name: varchar
+        region: varchar

@@ -1,0 +1,71 @@
+# Few-shot example bank. Retrieved dynamically by similarity to the user's question.
+# These are deliberately DIFFERENT from benchmark/questions.yml to avoid test leakage.
+- question: How many delivered orders were there in 2017?
+  sql: |
+    SELECT COUNT(*) AS delivered_orders
+    FROM fct_orders
+    WHERE order_status = 'delivered' AND order_year = 2017
+- question: What is the revenue by customer state?
+  sql: |
+    SELECT customer_state, SUM(order_value) AS revenue
+    FROM fct_orders
+    WHERE is_canceled = 0
+    GROUP BY customer_state
+    ORDER BY revenue DESC
+- question: Which 3 sellers sold the most items?
+  sql: |
+    SELECT seller_id, COUNT(*) AS items_sold
+    FROM fct_order_items
+    WHERE is_canceled = 0
+    GROUP BY seller_id
+    ORDER BY items_sold DESC
+    LIMIT 3
+- question: What is the average review score of orders paid by boleto?
+  sql: |
+    SELECT AVG(review_score) AS avg_review
+    FROM fct_orders
+    WHERE payment_type = 'boleto'
+- question: Show the monthly revenue trend for 2018.
+  sql: |
+    SELECT order_month, revenue
+    FROM mart_monthly_kpis
+    WHERE order_month LIKE '2018-%'
+    ORDER BY order_month
+- question: What share of customers are repeat customers?
+  sql: |
+    SELECT AVG(is_repeat_customer) AS repeat_share
+    FROM dim_customers
+- question: Compare average delivery time of late and on-time orders.
+  sql: |
+    SELECT is_late, AVG(delivery_days) AS avg_delivery_days, COUNT(*) AS orders
+    FROM fct_orders
+    WHERE is_late IS NOT NULL
+    GROUP BY is_late
+- question: What is the revenue by seller region?
+  sql: |
+    SELECT s.region, SUM(i.price) AS revenue
+    FROM fct_order_items i
+    JOIN dim_sellers s ON i.seller_id = s.seller_id
+    WHERE i.is_canceled = 0
+    GROUP BY s.region
+    ORDER BY revenue DESC
+- question: What is the best-selling category in each customer region?
+  sql: |
+    WITH sales AS (
+        SELECT c.region, i.category, COUNT(*) AS units
+        FROM fct_order_items i
+        JOIN fct_orders o ON i.order_id = o.order_id
+        JOIN dim_customers c ON o.customer_unique_id = c.customer_unique_id
+        WHERE i.is_canceled = 0
+        GROUP BY c.region, i.category
+    ), ranked AS (
+        SELECT *, ROW_NUMBER() OVER (PARTITION BY region ORDER BY units DESC) AS rn
+        FROM sales
+    )
+    SELECT region, category, units FROM ranked WHERE rn = 1
+- question: What was the month-over-month change in orders?
+  sql: |
+    SELECT order_month, orders,
+           orders - LAG(orders) OVER (ORDER BY order_month) AS change_vs_prior_month
+    FROM mart_monthly_kpis
+    ORDER BY order_month

@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    env:
+      OLIST_DUCKDB_PATH: ${{ github.workspace }}/warehouse/olist.duckdb
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements-dev.txt
+
+      - name: Generate synthetic Olist data
+        run: python ingestion/generate_synthetic.py --orders 8000 --out data/raw
+      - name: Load into DuckDB
+        run: python ingestion/ingest.py
+      - name: dbt build (seeds, models, data tests)
+        run: cd dbt && dbt build --profiles-dir .
+      - name: Model logic tests
+        run: pytest -q
+      - name: Insights report
+        run: python analysis/insights_report.py
+      - name: SQL lint (advisory)
+        continue-on-error: true
+        run: sqlfluff lint dbt/models

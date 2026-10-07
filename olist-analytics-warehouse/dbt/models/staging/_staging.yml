@@ -1,0 +1,75 @@
+version: 2
+
+models:
+  - name: stg_olist__orders
+    description: One row per order, timestamps typed.
+    columns:
+      - name: order_id
+        data_tests: [unique, not_null]
+      - name: customer_id
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('stg_olist__customers')
+              field: customer_id
+      - name: order_status
+        data_tests:
+          - accepted_values:
+              values: [delivered, shipped, canceled, unavailable, invoiced, processing, created, approved]
+      - name: purchased_at
+        data_tests: [not_null]
+
+  - name: stg_olist__customers
+    description: One row per customer_id. Olist issues a new customer_id per order; customer_unique_id identifies the person.
+    columns:
+      - name: customer_id
+        data_tests: [unique, not_null]
+      - name: customer_unique_id
+        data_tests: [not_null]
+
+  - name: stg_olist__order_items
+    columns:
+      - name: order_item_key
+        data_tests: [unique, not_null]
+      - name: order_id
+        data_tests:
+          - relationships:
+              to: ref('stg_olist__orders')
+              field: order_id
+      - name: price
+        data_tests: [not_null, non_negative]
+      - name: freight_value
+        data_tests: [non_negative]
+
+  - name: stg_olist__payments
+    columns:
+      - name: payment_key
+        data_tests: [unique, not_null]
+      - name: payment_type
+        data_tests:
+          - accepted_values:
+              values: [credit_card, boleto, voucher, debit_card, not_defined]
+      - name: payment_value
+        data_tests: [non_negative]
+
+  - name: stg_olist__reviews
+    description: Raw reviews. An order can have more than one review; deduplicated in int_order_reviews.
+    columns:
+      - name: review_score
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: [1, 2, 3, 4, 5]
+              quote: false
+
+  - name: stg_olist__products
+    columns:
+      - name: product_id
+        data_tests: [unique, not_null]
+      - name: category
+        data_tests: [not_null]
+
+  - name: stg_olist__sellers
+    columns:
+      - name: seller_id
+        data_tests: [unique, not_null]

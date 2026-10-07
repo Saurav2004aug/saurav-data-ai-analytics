@@ -1,0 +1,6 @@
+numpy>=2.0
+scikit-learn>=1.5
+websockets>=13.0
+confluent-kafka>=2.5
+clickhouse-connect>=0.8
+requests>=2.32

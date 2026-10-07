@@ -1,0 +1,295 @@
+# Text-to-SQL benchmark for the Olist warehouse.
+# Each item: natural-language question, gold SQL (portable: runs on DuckDB and SQLite),
+# difficulty, and whether row ORDER matters when comparing results.
+# Scoring = execution accuracy: the predicted query's result set must equal the gold result
+# set (column order/names ignored, numbers compared to 2 decimal places).
+
+# ------------------------------- easy (single table) -------------------------------
+- id: q01
+  difficulty: easy
+  question: How many orders are there in total?
+  sql: SELECT COUNT(*) FROM fct_orders
+
+- id: q02
+  difficulty: easy
+  question: How many customers are there?
+  sql: SELECT COUNT(*) FROM dim_customers
+
+- id: q03
+  difficulty: easy
+  question: How many orders were canceled or unavailable?
+  sql: SELECT COUNT(*) FROM fct_orders WHERE is_canceled = 1
+
+- id: q04
+  difficulty: easy
+  question: What is the average review score across all orders?
+  sql: SELECT ROUND(AVG(review_score), 2) FROM fct_orders
+
+- id: q05
+  difficulty: easy
+  question: What was the total revenue in 2018?
+  sql: SELECT ROUND(SUM(order_value), 2) FROM fct_orders WHERE is_canceled = 0 AND order_year = 2018
+
+- id: q06
+  difficulty: easy
+  question: How many sellers are based in the state of SP?
+  sql: SELECT COUNT(*) FROM dim_sellers WHERE state_code = 'SP'
+
+- id: q07
+  difficulty: easy
+  question: How many distinct product categories are there?
+  sql: SELECT COUNT(DISTINCT category) FROM dim_products
+
+- id: q08
+  difficulty: easy
+  question: What is the most common payment type?
+  ordered: true
+  sql: |
+    SELECT payment_type FROM fct_orders
+    GROUP BY payment_type ORDER BY COUNT(*) DESC LIMIT 1
+
+- id: q09
+  difficulty: easy
+  question: How many delivered orders arrived late?
+  sql: SELECT COUNT(*) FROM fct_orders WHERE is_late = 1
+
+- id: q10
+  difficulty: easy
+  question: What is the average order value of non-canceled orders?
+  sql: SELECT ROUND(AVG(order_value), 2) FROM fct_orders WHERE is_canceled = 0
+
+- id: q11
+  difficulty: easy
+  question: Which month had the highest revenue?
+  ordered: true
+  sql: SELECT order_month FROM mart_monthly_kpis ORDER BY revenue DESC LIMIT 1
+
+- id: q12
+  difficulty: easy
+  question: How many customers live in the Northeast region?
+  sql: SELECT COUNT(*) FROM dim_customers WHERE region = 'Northeast'
+
+- id: q13
+  difficulty: easy
+  question: What is the maximum number of installments used on an order?
+  sql: SELECT MAX(installments) FROM fct_orders
+
+- id: q14
+  difficulty: easy
+  question: How many orders received a 1-star review?
+  sql: SELECT COUNT(*) FROM fct_orders WHERE review_score = 1
+
+# ------------------------------- medium (group by / filters / one join) ------------
+- id: q15
+  difficulty: medium
+  question: What are the top 5 product categories by revenue?
+  ordered: true
+  sql: |
+    SELECT category, ROUND(SUM(price), 2) AS revenue
+    FROM fct_order_items WHERE is_canceled = 0
+    GROUP BY category ORDER BY revenue DESC LIMIT 5
+
+- id: q16
+  difficulty: medium
+  question: What is the number of orders per year?
+  sql: SELECT order_year, COUNT(*) FROM fct_orders GROUP BY order_year
+
+- id: q17
+  difficulty: medium
+  question: Which 5 customer states have the slowest average delivery time?
+  ordered: true
+  sql: |
+    SELECT customer_state, ROUND(AVG(delivery_days), 2) AS avg_days
+    FROM fct_orders WHERE delivery_days IS NOT NULL
+    GROUP BY customer_state ORDER BY avg_days DESC LIMIT 5
+
+- id: q18
+  difficulty: medium
+  question: What percentage of delivered orders were late?
+  sql: SELECT ROUND(100.0 * AVG(is_late), 2) FROM fct_orders WHERE is_late IS NOT NULL
+
+- id: q19
+  difficulty: medium
+  question: What is the average review score for late orders versus on-time orders?
+  sql: |
+    SELECT is_late, ROUND(AVG(review_score), 2)
+    FROM fct_orders WHERE is_late IS NOT NULL GROUP BY is_late
+
+- id: q20
+  difficulty: medium
+  question: How many repeat customers are there?
+  sql: SELECT COUNT(*) FROM dim_customers WHERE is_repeat_customer = 1
+
+- id: q21
+  difficulty: medium
+  question: What is the revenue for each payment type?
+  sql: |
+    SELECT payment_type, ROUND(SUM(order_value), 2)
+    FROM fct_orders WHERE is_canceled = 0 GROUP BY payment_type
+
+- id: q22
+  difficulty: medium
+  question: What is the average number of installments for credit card orders?
+  sql: SELECT ROUND(AVG(installments), 2) FROM fct_orders WHERE payment_type = 'credit_card'
+
+- id: q23
+  difficulty: medium
+  question: Who are the top 10 sellers by revenue?
+  ordered: true
+  sql: |
+    SELECT seller_id, ROUND(SUM(price), 2) AS revenue
+    FROM fct_order_items WHERE is_canceled = 0
+    GROUP BY seller_id ORDER BY revenue DESC LIMIT 10
+
+- id: q24
+  difficulty: medium
+  question: Which categories with at least 500 orders have an average review score below 4.2?
+  sql: |
+    SELECT i.category, ROUND(AVG(o.review_score), 2)
+    FROM fct_order_items i JOIN fct_orders o ON i.order_id = o.order_id
+    GROUP BY i.category
+    HAVING COUNT(DISTINCT i.order_id) >= 400 AND AVG(o.review_score) < 4.2
+
+- id: q25
+  difficulty: medium
+  question: How many new customers were acquired in each month of 2017?
+  sql: |
+    SELECT order_month, new_customers FROM mart_monthly_kpis
+    WHERE order_month LIKE '2017-%'
+
+- id: q26
+  difficulty: medium
+  question: What is the revenue by customer region?
+  sql: |
+    SELECT c.region, ROUND(SUM(o.order_value), 2)
+    FROM fct_orders o JOIN dim_customers c ON o.customer_unique_id = c.customer_unique_id
+    WHERE o.is_canceled = 0 GROUP BY c.region
+
+- id: q27
+  difficulty: medium
+  question: How many sellers are there in each region?
+  sql: SELECT region, COUNT(*) FROM dim_sellers GROUP BY region
+
+- id: q28
+  difficulty: medium
+  question: What is the average freight value per order in each customer state, for the 3 most expensive states?
+  ordered: true
+  sql: |
+    SELECT customer_state, ROUND(AVG(freight_value), 2) AS avg_freight
+    FROM fct_orders WHERE is_canceled = 0
+    GROUP BY customer_state ORDER BY avg_freight DESC LIMIT 3
+
+- id: q29
+  difficulty: medium
+  question: What is the average price of items in the electronics category?
+  sql: SELECT ROUND(AVG(price), 2) FROM fct_order_items WHERE category = 'electronics'
+
+- id: q30
+  difficulty: medium
+  question: What is the average lifetime value of repeat customers compared with one-time customers?
+  sql: |
+    SELECT is_repeat_customer, ROUND(AVG(lifetime_value), 2)
+    FROM dim_customers GROUP BY is_repeat_customer
+
+# ------------------------------- hard (multi-join / window / ratio logic) ----------
+- id: q31
+  difficulty: hard
+  question: What share of total revenue comes from repeat customers?
+  sql: |
+    SELECT ROUND(100.0 * SUM(CASE WHEN c.is_repeat_customer = 1 THEN o.order_value ELSE 0 END)
+                 / SUM(o.order_value), 2)
+    FROM fct_orders o JOIN dim_customers c ON o.customer_unique_id = c.customer_unique_id
+    WHERE o.is_canceled = 0
+
+- id: q32
+  difficulty: hard
+  question: For each month of 2018, what was the month-over-month revenue growth in percent?
+  ordered: true
+  sql: |
+    WITH m AS (
+      SELECT order_month, revenue,
+             LAG(revenue) OVER (ORDER BY order_month) AS prev
+      FROM mart_monthly_kpis
+    )
+    SELECT order_month, ROUND(100.0 * (revenue - prev) / prev, 2)
+    FROM m WHERE order_month LIKE '2018-%' ORDER BY order_month
+
+- id: q33
+  difficulty: hard
+  question: What is the top category by revenue in each seller region?
+  sql: |
+    WITH r AS (
+      SELECT s.region, i.category, SUM(i.price) AS revenue,
+             ROW_NUMBER() OVER (PARTITION BY s.region ORDER BY SUM(i.price) DESC) AS rn
+      FROM fct_order_items i JOIN dim_sellers s ON i.seller_id = s.seller_id
+      WHERE i.is_canceled = 0
+      GROUP BY s.region, i.category
+    )
+    SELECT region, category FROM r WHERE rn = 1
+
+- id: q34
+  difficulty: hard
+  question: What is the cumulative revenue by month in 2017?
+  ordered: true
+  sql: |
+    SELECT order_month,
+           ROUND(SUM(revenue) OVER (ORDER BY order_month), 2)
+    FROM mart_monthly_kpis WHERE order_month LIKE '2017-%' ORDER BY order_month
+
+- id: q35
+  difficulty: hard
+  question: Which 5 states have the highest revenue per customer?
+  ordered: true
+  sql: |
+    SELECT customer_state,
+           ROUND(SUM(order_value) / COUNT(DISTINCT customer_unique_id), 2) AS revenue_per_customer
+    FROM fct_orders WHERE is_canceled = 0
+    GROUP BY customer_state ORDER BY revenue_per_customer DESC LIMIT 5
+
+- id: q36
+  difficulty: hard
+  question: What percentage of customers whose first order was delivered late ever placed a second order?
+  sql: |
+    SELECT ROUND(100.0 * AVG(c.is_repeat_customer), 2)
+    FROM fct_orders o JOIN dim_customers c ON o.customer_unique_id = c.customer_unique_id
+    WHERE o.order_seq = 1 AND o.is_late = 1
+
+- id: q37
+  difficulty: hard
+  question: What is the 1-star review rate by delivery delay group - on time or early, 1 to 7 days late, and more than 7 days late?
+  sql: |
+    SELECT CASE WHEN delay_days <= 0 THEN 'on time or early'
+                WHEN delay_days <= 7 THEN '1-7 days late'
+                ELSE 'more than 7 days late' END AS delay_group,
+           ROUND(100.0 * AVG(CASE WHEN review_score = 1 THEN 1.0 ELSE 0.0 END), 2)
+    FROM fct_orders
+    WHERE delay_days IS NOT NULL AND review_score IS NOT NULL
+    GROUP BY delay_group
+
+- id: q38
+  difficulty: hard
+  question: How many sellers sold to customers in more than 10 different states?
+  sql: |
+    SELECT COUNT(*) FROM (
+      SELECT i.seller_id
+      FROM fct_order_items i JOIN fct_orders o ON i.order_id = o.order_id
+      GROUP BY i.seller_id HAVING COUNT(DISTINCT o.customer_state) > 10
+    ) t
+
+- id: q39
+  difficulty: hard
+  question: What share of orders contain more than one item, by year?
+  sql: |
+    SELECT order_year, ROUND(100.0 * AVG(CASE WHEN n_items > 1 THEN 1.0 ELSE 0.0 END), 2)
+    FROM fct_orders GROUP BY order_year
+
+- id: q40
+  difficulty: hard
+  question: Which seller has the highest average review score among sellers with at least 40 orders?
+  ordered: true
+  sql: |
+    SELECT i.seller_id
+    FROM fct_order_items i JOIN fct_orders o ON i.order_id = o.order_id
+    GROUP BY i.seller_id
+    HAVING COUNT(DISTINCT i.order_id) >= 40
+    ORDER BY AVG(o.review_score) DESC LIMIT 1

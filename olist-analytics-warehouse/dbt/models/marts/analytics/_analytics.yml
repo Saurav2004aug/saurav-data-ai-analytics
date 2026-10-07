@@ -1,0 +1,56 @@
+version: 2
+
+models:
+  - name: mart_monthly_kpis
+    description: Executive KPIs per month (orders, revenue, AOV, new vs returning customers, service levels).
+    columns:
+      - name: order_month
+        data_tests: [unique, not_null]
+      - name: late_delivery_rate
+        data_tests:
+          - is_between: {min_value: 0, max_value: 1}
+      - name: revenue
+        data_tests: [non_negative]
+
+  - name: mart_cohort_retention
+    description: Long-format cohort retention (cohort_month x months_since_first).
+    columns:
+      - name: retention_rate
+        data_tests:
+          - is_between: {min_value: 0, max_value: 1}
+
+  - name: mart_customer_rfm
+    description: RFM scores and named segments per customer.
+    columns:
+      - name: customer_unique_id
+        data_tests: [unique, not_null]
+      - name: segment
+        data_tests:
+          - accepted_values:
+              values: [Champions, Loyal - at risk, Promising big spenders, Recent one-timers,
+                       Cooling down, Lost big spenders, Hibernating]
+
+  - name: mart_delivery_performance
+    description: Review score by delivery delay bucket - the delivery -> satisfaction link.
+    columns:
+      - name: delay_bucket
+        data_tests: [unique, not_null]
+
+  - name: mart_state_performance
+    columns:
+      - name: state_code
+        data_tests: [unique, not_null]
+
+  - name: mart_seller_scorecard
+    columns:
+      - name: seller_id
+        data_tests: [unique, not_null]
+      - name: tier
+        data_tests:
+          - accepted_values:
+              values: [Gold, Silver, Needs attention, New / low volume]
+
+  - name: mart_category_performance
+    columns:
+      - name: category
+        data_tests: [unique]

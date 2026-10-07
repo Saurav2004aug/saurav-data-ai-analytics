@@ -1,0 +1,81 @@
+# One command brings up the whole stack:  docker compose up -d --build
+#   Grafana dashboard   http://localhost:3000   (anonymous admin, local use only)
+#   Redpanda Console    http://localhost:8080
+#   ClickHouse HTTP     http://localhost:8123
+name: crypto-realtime
+
+services:
+  redpanda:
+    image: docker.redpanda.com/redpandadata/redpanda:v24.2.7
+    command:
+      - redpanda start
+      - --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr internal://redpanda:9092,external://localhost:19092
+      - --smp 1
+      - --memory 1G
+      - --mode dev-container
+    ports: ["19092:19092"]
+    healthcheck:
+      test: ["CMD-SHELL", "rpk cluster health | grep -E 'Healthy:.+true' || exit 1"]
+      interval: 5s
+      retries: 20
+
+  topic-init:
+    image: docker.redpanda.com/redpandadata/redpanda:v24.2.7
+    depends_on: {redpanda: {condition: service_healthy}}
+    entrypoint: ["rpk", "topic", "create", "trades", "-p", "3", "-c", "retention.ms=86400000",
+                 "-X", "brokers=redpanda:9092"]
+    restart: "no"
+
+  console:
+    image: docker.redpanda.com/redpandadata/console:v2.7.2
+    environment:
+      KAFKA_BROKERS: redpanda:9092
+    ports: ["8080:8080"]
+    depends_on: {redpanda: {condition: service_healthy}}
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.8
+    environment:
+      CLICKHOUSE_SKIP_USER_SETUP: "1"     # passwordless default user - local development only
+    ports: ["8123:8123", "9000:9000"]
+    volumes:
+      - ./clickhouse/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - clickhouse-data:/var/lib/clickhouse
+    ulimits:
+      nofile: {soft: 262144, hard: 262144}
+    depends_on: {topic-init: {condition: service_completed_successfully}}
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    environment:
+      GF_INSTALL_PLUGINS: grafana-clickhouse-datasource
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /var/lib/grafana/dashboards/crypto_realtime.json
+    ports: ["3000:3000"]
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on: [clickhouse]
+
+  producer:
+    build: .
+    command: ["python", "services/producer.py", "--source", "${PRODUCER_SOURCE:-live}"]
+    environment:
+      KAFKA_BOOTSTRAP: redpanda:9092
+    depends_on: {topic-init: {condition: service_completed_successfully}}
+    restart: unless-stopped
+
+  analytics:
+    build: .
+    command: ["python", "services/analytics.py"]
+    environment:
+      KAFKA_BOOTSTRAP: redpanda:9092
+      CLICKHOUSE_HOST: clickhouse
+      ALERT_WEBHOOK_URL: ${ALERT_WEBHOOK_URL:-}
+    depends_on: [clickhouse, producer]
+    restart: unless-stopped
+
+volumes:
+  clickhouse-data:

@@ -1,0 +1,31 @@
+{
+  "source": "synthetic simulator (known ground truth)",
+  "n_battles": 20000,
+  "n_models": 12,
+  "n_boot": 200,
+  "position": {
+    "n_decisive": 15253,
+    "a_win_share": 0.5160296335147184,
+    "ci_low": 0.5080956461185365,
+    "ci_high": 0.5239555485402584,
+    "p_value": 7.76189251529631e-05
+  },
+  "length": {
+    "n_decisive": 15244,
+    "longer_win_share": 0.6805956441878772,
+    "ci_low": 0.6731494051400595,
+    "ci_high": 0.6879508833099464,
+    "p_value": 0.0,
+    "controlled_length_coef": 0.25244349958075446
+  },
+  "elo_bt_spearman": 0.9860139860139862,
+  "topic_ari": 0.8675951136921495,
+  "judge": {
+    "n": 300,
+    "backend": "mock",
+    "agreement_all": 0.71,
+    "agreement_decisive": 0.9803921568627451,
+    "cohen_kappa": 0.5807363618839555,
+    "position_consistency": 0.6566666666666666
+  }
+}

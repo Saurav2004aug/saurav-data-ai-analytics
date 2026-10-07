@@ -1,0 +1,4 @@
+name: olist
+type: duckdb
+options:
+  filename: olist.duckdb   # copied here by `make dashboard` after each dbt build

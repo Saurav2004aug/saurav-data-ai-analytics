@@ -1,0 +1,13 @@
+[sqlfluff]
+templater = dbt
+dialect = duckdb
+max_line_length = 120
+# style rules only; aliasing rules are relaxed for readability of long select lists
+exclude_rules = AL01, AL07, ST06, RF04
+
+[sqlfluff:templater:dbt]
+project_dir = dbt
+profiles_dir = dbt
+
+[sqlfluff:rules:capitalisation.keywords]
+capitalisation_policy = lower
